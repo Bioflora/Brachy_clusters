@@ -141,6 +141,8 @@ FILE: foreach my $file (@infiles) {
 	#next if ($file !~ '98148_c37636_g1_i2_chr9');  # 8Oct.0 Bmex seqs in the original, 2 sequences at the final cluster. 
 	# next if ($file !~ '93023_c37202_g2_i1_chr5'); # Not at 03_blocks_genes 08Oct
 	#next if ($file !~ '102250_c37694_g3_i4_chr9');
+	next if ($file !~ '108368_c31249_g2_i1_chr1');
+
 	print "$file\n";
 
 	my ($name,$shortsp,%seqs,%genes,@sorted_ids);
@@ -177,7 +179,7 @@ FILE: foreach my $file (@infiles) {
 
 		# rank hits for this species ($sp) by parsing 
 		# BLASTN results and tallying occurrences and bit-score
-                # next if($sp ne 'Bgla');
+      # next if($sp ne 'Bgla');
 		my (%stats,%sp_stats,%queries,%bit,%ancestral_bit,@alleles);
 		if(open(BLAST,"<",$blastdirs{$sp}.$file)){
 			while(my $line = <BLAST>){
@@ -199,7 +201,7 @@ FILE: foreach my $file (@infiles) {
 					#$queries{$qseqid}++;
 				}
                                 
-                                # save scores to other species as well, 
+            # save scores to other species as well, 
 				# useful to compute distances and ancestry
 				$sp_stats{$shortsp}{$sseqid}{'tot'}++;
 				$sp_stats{$shortsp}{$sseqid}{'bit'}+=$bitscore;
@@ -207,7 +209,7 @@ FILE: foreach my $file (@infiles) {
 				# init %bit and %ancestral_bit
 				$bit{$sseqid}{'ancestral'} = 0;
 				$bit{$sseqid}{'recent'} = 0;
-                                $ancestral_bit{$sseqid}	= 0;
+				$ancestral_bit{$sseqid}	= 0;
 			}
 			close(BLAST);
 
@@ -221,8 +223,8 @@ FILE: foreach my $file (@infiles) {
 						foreach $sseqid (keys(%{ $sp_stats{$sp2} })){
 							$stats{$sseqid}{'tot'} += 
 								$sp_stats{$sp2}{$sseqid}{'tot'};
-                                        		$stats{$sseqid}{'bit'} += 
-								$sp_stats{$sp2}{$sseqid}{'bit'};
+                    		$stats{$sseqid}{'bit'} += 
+									$sp_stats{$sp2}{$sseqid}{'bit'};
 						}
 					} 
 				}
@@ -351,12 +353,12 @@ FILE: foreach my $file (@infiles) {
 							$bit{$sseqid}{'recent'} ) {
 							push(@{$genes{$sp}{'name'}}, 
 								'dummy');
-                                                	push(@{$genes{$sp}{'sequence'}}, 
+							push(@{$genes{$sp}{'sequence'}}, 
 								'-' x 100);
 						} else {
 							unshift(@{$genes{$sp}{'name'}}, 
 								'dummy');
-                                                        unshift(@{$genes{$sp}{'sequence'}}, 
+                     unshift(@{$genes{$sp}{'sequence'}}, 
 								'-' x 100);
 						}
 					}
@@ -420,15 +422,15 @@ FILE: foreach my $file (@infiles) {
 					}
 
 
-                                	print GENECLUSTER "$genes{$shortsp}{'sequence'}[$hit]\n";
+					print GENECLUSTER "$genes{$shortsp}{'sequence'}[$hit]\n";
             
 					if($genes{$shortsp}{'name'}[$hit] !~ 'dummy'){ 
-                                		printf("%s\t%d > %d\n",$genes{$shortsp}{'name'}[$hit],
-                                        		length($genes{$shortsp}{'sequence'}[$hit]),
-                                        		length($seqs{$seqid}));
+						printf("%s\t%d > %d\n",$genes{$shortsp}{'name'}[$hit],
+                    		length($genes{$shortsp}{'sequence'}[$hit]),
+                    		length($seqs{$seqid}));
 					} else {
 						printf("%s\t%d\n",$genes{$shortsp}{'name'}[$hit],
-                                                        length($genes{$shortsp}{'sequence'}[$hit]));
+							length($genes{$shortsp}{'sequence'}[$hit]));
 					}
                         	}
 		
