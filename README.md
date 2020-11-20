@@ -2,7 +2,7 @@
 
 This repository contains code and data for phylogenetic analyses of different Brachypodium species.
 
-# add_gene_seqs2clusters.pl
+### add_gene_seqs2clusters.pl
 
 This script takes as input precomputed clusters of transcripts and produces enlarged clusters with sequences from species or longer gene sequences matching transcripts from previous species.
 
