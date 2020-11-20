@@ -28,6 +28,10 @@ if(!$ARGV[1]){
 
 my ($transcriptdir, $finalclusterdir) = @ARGV;
 
+# make sure paths can be concatenated
+$transcriptdir   .= '/';
+$finalclusterdir .= '/';
+
 print "# params:\n";
 print "# input cluster dir: $transcriptdir\n";
 print "# output dir: $finalclusterdir\n";
