@@ -6,10 +6,12 @@ This repository contains code and data for phylogenetic analyses of different Br
 
 This script takes as input precomputed clusters of transcripts and produces enlarged clusters with sequences from species or longer gene sequences matching transcripts from previous species.
 
+You must configure variables %blastdirs, %references, @order, %max_references_seqs before analyses, see examples in the script. 
+
 The script is called as: 
-´´´
+```
 perl add_gene_seqs2clusters.pl input_cluster_dir output_dir
-´´´
+```
 
 This is how input clusters look like, note the abbreviated species name at the end of the FASTA header:
 ```
