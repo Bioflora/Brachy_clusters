@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 # Takes as input 
-# 1) precomputed FASTA files with transcript clusters ($transcriptdir)
+# 1) precomputed FASTA files with transcript clusters <input cluster dir>
 # 2) new sequences to be added to those clusters
 #  2.1) a FASTA file per new species to be added (%references)
 #  2.2) a folder with pre-computed BLASTN searches matching reference seqs to clusters
@@ -12,15 +12,26 @@ use warnings;
 # When two sequences are found they are ranked by similarity to defined ancestral and 
 # recent species
 #
-# Produces enlarged clusters with new added/substituted sequences:
+# Produces enlarged clusters with new added/substituted sequences in <output dir>:
 # i) when a reference sequence is found in the original cluster, it is replaced
 #    with a new one from the reference FASTA file
 # ii) if a reference species was not present in the original cluster it is added
 #
-# MaDecena, Bruno 2020
+# MaDecena Decena, Bruno Contreras Moreira EPS-UNIZAR & EEAD-CSIC 2020
 
-my $transcriptdir   = '03_blocks_noindels/';
-my $finalclusterdir = '03_blocks_genes/'; # output folder 
+if(!$ARGV[1]){
+	print "# usage: $0 <input cluster dir> <output dir>\n\n";
+	print "# Please make sure you configure the following:\n";
+	print "# %blastdirs, %references, \@order, %max_references_seqs\n\n";
+	exit(0);
+}
+
+my ($transcriptdir, $finalclusterdir) = @ARGV;
+
+print "# params:\n";
+print "# input cluster dir: $transcriptdir\n";
+print "# output dir: $finalclusterdir\n";
+
 my %blastdirs = (
 	'Bdis' => 'blast_Bdis/',
 	'Bsta' => 'blast_Bsta/',
@@ -28,7 +39,7 @@ my %blastdirs = (
 	'Barb' => 'blast_Barb/',
 	'Bmex' => 'blast_Bmex/',
 	'Bpin' => 'blast_Bpin/',
-	#'Bgla' => 'blast_Bglau/',
+	'Bgla' => 'blast_Bgla/',
 	'Bhyb' => 'blast_Bhyb/',
 	'Osat' => 'blast_Osat/',
 	'Hvul' => 'blast_Hvul/',
@@ -41,7 +52,7 @@ my %references = (
 	'Barb' => 'referencias/Barbuscula_genes.nr.fna',
 	'Bmex' => 'referencias/Bmexicanum_genes.nr.fna',
 	'Bpin' => 'referencias/Bpin_consensusG_shortname.1L.depth4min1000_nomissing.fna',
-	#'Bgla'=> 'referencias/',
+	'Bgla'=> 'referencias/Bglau_consensusG_shortname.1L.depth4.min1000.nomissing.fna',
 	'Bhyb'=> 'referencias/Bhybridum.unspliced.gene.100flank.fna',
 	'Osat' => 'referencias/Osativa.unspliced.gene.100flank.fna',
 	'Hvul' => 'referencias/Hvulgare.unspliced.gene.100flank.fna',
@@ -49,12 +60,14 @@ my %references = (
 
 # any species not in the list will be ignored
 # Note: Bmex, Bhyb are not diploids
-my @order = ( 'Osat', 'Hvul', 'Bmex', 'Bsta', 'Bhyb', 'Bdis', 'Barb', 'Bpin', 'Bsyl' );
+my @order = ( 'Osat', 'Hvul', 'Bmex', 'Bsta', 'Bhyb', 'Bdis', 
+		'Barb', 'Bpin', 'Bsyl', 'Bgla' );
 
-# by default only the 1, the best hit, is taken
+# By default only the 1st, the best hit, is taken.
+# However, for polyploids or species absent from original clusters,
+# this won't work.
 # Two species names are provided that represent ancestral and recent species,
-# respectively. These are used to rank multiple alleles so that
-# clusters can subsequently been concatenated
+# respectively. These are used to rank multiple alleles
 my %max_reference_seqs = (
 	'Bmex' => [ 
 		2,      # expected copies/alleles 
@@ -66,9 +79,22 @@ my %max_reference_seqs = (
 		2,      
 		'Bsta',
 		'Bdis',
-		0	# max not defined, as we expect exatly 1 D & 1 S allele 
+		0	# max not defined, as we expect exactly 1 D & 1 S allele 
+	],
+	'Bgla' => [
+		1,
+		'Bsta',
+		'Bsta',
+		0
 	]
 );
+
+printf("# blastdirs: %s\n",join(',',sort keys(%blastdirs)));
+printf("# references: %s\n",join(',',sort values(%references)));
+printf("# order: %s\n",join(',',@order));
+printf("# max_reference_seqs: %s\n\n",join(',',sort keys(%max_reference_seqs)));
+
+##########################################################
 
 # make sure missing BLASTN outfiles are regenerated, in case original jobs failed
 my $BLASTNCMD = '/home/soft/ncbi-blast-2.10.0+/bin/blastn -outfmt 6 '.	
@@ -147,7 +173,7 @@ FILE: foreach my $file (@infiles) {
 
 		# rank hits for this species ($sp) by parsing 
 		# BLASTN results and tallying occurrences and bit-score
-                #next if($sp ne 'Bmex');
+                # next if($sp ne 'Bgla');
 		my (%stats,%sp_stats,%queries,%bit,%ancestral_bit,@alleles);
 		if(open(BLAST,"<",$blastdirs{$sp}.$file)){
 			while(my $line = <BLAST>){
@@ -200,7 +226,7 @@ FILE: foreach my $file (@infiles) {
 		} else {
 			die "# ERROR: cannot find $blastdirs{$sp}$file, ".
 				"use original available transcript\n";
-		}		
+		} 
 
 		# if required, sort alleles as ancestral/recent
 		# Note: resulting cumulative bitscore measure similarity to recent,
