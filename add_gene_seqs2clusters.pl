@@ -143,7 +143,7 @@ FILE: foreach my $file (@infiles) {
 
 	# read transcript sequences
 	open(FASTA,"<",$transcriptdir.$file) || 
-		die "# ERROR: cannot read $transcriptdir$file\n";
+		die "# ERROR: cannot read $transcriptdir.$file\n";
 	while(my $line = <FASTA>){
    		chomp($line);
 	
