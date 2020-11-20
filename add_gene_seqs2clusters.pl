@@ -141,7 +141,7 @@ FILE: foreach my $file (@infiles) {
 	#next if ($file !~ '98148_c37636_g1_i2_chr9');  # 8Oct.0 Bmex seqs in the original, 2 sequences at the final cluster. 
 	# next if ($file !~ '93023_c37202_g2_i1_chr5'); # Not at 03_blocks_genes 08Oct
 	#next if ($file !~ '102250_c37694_g3_i4_chr9');
-	next if ($file !~ '108368_c31249_g2_i1_chr1');
+	#next if ($file !~ '108368_c31249_g2_i1_chr1');
 
 	print "$file\n";
 
@@ -179,7 +179,7 @@ FILE: foreach my $file (@infiles) {
 
 		# rank hits for this species ($sp) by parsing 
 		# BLASTN results and tallying occurrences and bit-score
-      # next if($sp ne 'Bgla');
+		# next if($sp ne 'Bgla');
 		my (%stats,%sp_stats,%queries,%bit,%ancestral_bit,@alleles);
 		if(open(BLAST,"<",$blastdirs{$sp}.$file)){
 			while(my $line = <BLAST>){
@@ -201,7 +201,7 @@ FILE: foreach my $file (@infiles) {
 					#$queries{$qseqid}++;
 				}
                                 
-            # save scores to other species as well, 
+				# save scores to other species as well, 
 				# useful to compute distances and ancestry
 				$sp_stats{$shortsp}{$sseqid}{'tot'}++;
 				$sp_stats{$shortsp}{$sseqid}{'bit'}+=$bitscore;
@@ -223,8 +223,8 @@ FILE: foreach my $file (@infiles) {
 						foreach $sseqid (keys(%{ $sp_stats{$sp2} })){
 							$stats{$sseqid}{'tot'} += 
 								$sp_stats{$sp2}{$sseqid}{'tot'};
-                    		$stats{$sseqid}{'bit'} += 
-									$sp_stats{$sp2}{$sseqid}{'bit'};
+							$stats{$sseqid}{'bit'} += 
+								$sp_stats{$sp2}{$sseqid}{'bit'};
 						}
 					} 
 				}
@@ -358,7 +358,7 @@ FILE: foreach my $file (@infiles) {
 						} else {
 							unshift(@{$genes{$sp}{'name'}}, 
 								'dummy');
-                     unshift(@{$genes{$sp}{'sequence'}}, 
+							unshift(@{$genes{$sp}{'sequence'}}, 
 								'-' x 100);
 						}
 					}
@@ -366,7 +366,16 @@ FILE: foreach my $file (@infiles) {
 					last;
 				}
 			}
-		} 
+		}
+
+		# add dummy alleles for species with no hits at all
+		if(defined($max_reference_seqs{$sp})){
+			while($hits < $max_reference_seqs{$sp}[0]){
+				push(@{$genes{$sp}{'name'}},'dummy');
+				push(@{$genes{$sp}{'sequence'}},'-' x 100);
+				$hits++;
+			}
+		}
 	} 
 
 			 
@@ -454,8 +463,8 @@ FILE: foreach my $file (@infiles) {
 			print GENECLUSTER "\n";	
 		} 
 		else {
-			# recorre lista de genes de species en %max_reference_seqs y añadirlos al cluster
-			  foreach my $hit (0 .. scalar(@{$genes{$sp}{'name'}})-1){
+			# loop through %genes, should be filled even without hits
+			foreach my $hit (0 .. scalar(@{$genes{$sp}{'name'}})-1){
 				print GENECLUSTER ">$sp $genes{$sp}{'name'}[$hit]\n";
 				print GENECLUSTER "$genes{$sp}{'sequence'}[$hit]\n";
 			}
