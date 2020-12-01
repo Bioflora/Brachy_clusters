@@ -426,22 +426,28 @@ FILE: foreach my $file (@infiles) {
 				# actually add ref sequences to cluster
 				foreach my $hit (0 .. scalar(@{$genes{$shortsp}{'name'}})-1){
 
-					if($hit == 0){
-                                	print GENECLUSTER ">$shortsp $genes{$shortsp}{'name'}[$hit]\n";
-					} else { # number extra alleles
+					if(scalar(@{$genes{$shortsp}{'name'}}) == 1){
+						printf(GENECLUSTER ">%s %s\n",
+                                                $shortsp,
+                                                $genes{$shortsp}{'name'}[$hit]);
+
+					} else {
+
+						# number alleles when more than one 
 						printf(GENECLUSTER ">%s.%d %s\n",
 							$shortsp,
 							$hit+1, 
-							$genes{$shortsp}{'name'}[$hit]);
+							$genes{$shortsp}{'name'}[$hit]);	
 					}
-
 
 					print GENECLUSTER "$genes{$shortsp}{'sequence'}[$hit]\n";
             
+					# info to stdout
 					if($genes{$shortsp}{'name'}[$hit] !~ 'dummy'){ 
-						printf("%s\t%d > %d\n",$genes{$shortsp}{'name'}[$hit],
-                    		length($genes{$shortsp}{'sequence'}[$hit]),
-                    		length($seqs{$seqid}));
+						printf("%s\t%d > %d\n",
+							$genes{$shortsp}{'name'}[$hit],
+                    					length($genes{$shortsp}{'sequence'}[$hit]),
+                    					length($seqs{$seqid}));
 					} else {
 						printf("%s\t%d\n",$genes{$shortsp}{'name'}[$hit],
 							length($genes{$shortsp}{'sequence'}[$hit]));
@@ -470,7 +476,18 @@ FILE: foreach my $file (@infiles) {
 		else {
 			# loop through %genes, should be filled even without hits
 			foreach my $hit (0 .. scalar(@{$genes{$sp}{'name'}})-1){
-				print GENECLUSTER ">$sp $genes{$sp}{'name'}[$hit]\n";
+
+				if(scalar(@{$genes{$sp}{'name'}}) == 1){
+					printf(GENECLUSTER ">%s %s\n",
+						$sp,
+						$genes{$sp}{'name'}[$hit]);
+				} else {
+					printf(GENECLUSTER ">%s.%d %s\n",
+						$sp,
+						$hit+1,
+						$genes{$sp}{'name'}[$hit]);
+				}
+
 				print GENECLUSTER "$genes{$sp}{'sequence'}[$hit]\n";
 			}
 		}
