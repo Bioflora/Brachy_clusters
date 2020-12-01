@@ -83,7 +83,7 @@ my %max_reference_seqs = (
 		2,      
 		'Bsta',
 		'Bdis',
-		0	# max not defined, as we expect exactly 1 D & 1 S allele 
+		0	# max not defined, as we expect exactly 1 D & 1 S allele
 	],
 	'Bgla' => [
 		1,
@@ -139,10 +139,12 @@ FILE: foreach my $file (@infiles) {
         #next if ($file !~ '103577_c35382_g1_i2_chr4'); # 1 Bmex seq in the original, 1 at the final cluster, no blast hits, should be discarded 
 	#next if ($file !~ '93618_c36457_g1_i2_chr2');  # 1 Bmex seq in the original, 2 hits, 1 dummy at the final cluster. 8Oct 2Bmex at final cluster.
 	#next if ($file !~ '98148_c37636_g1_i2_chr9');  # 8Oct.0 Bmex seqs in the original, 2 sequences at the final cluster. 
-	# next if ($file !~ '93023_c37202_g2_i1_chr5'); # Not at 03_blocks_genes 08Oct
+	#next if ($file !~ '93023_c37202_g2_i1_chr5'); # Not at 03_blocks_genes 08Oct
 	#next if ($file !~ '102250_c37694_g3_i4_chr9');
 	#next if ($file !~ '108368_c31249_g2_i1_chr1');
-
+	#next if ($file !~ '103577_c35382_g1_i2_chr4');
+	#next if($file !~ '110095_c30558');
+	#next if ($file !~ '110411_c26578_g1_i1_chr4');
 	print "$file\n";
 
 	my ($name,$shortsp,%seqs,%genes,@sorted_ids);
@@ -179,7 +181,7 @@ FILE: foreach my $file (@infiles) {
 
 		# rank hits for this species ($sp) by parsing 
 		# BLASTN results and tallying occurrences and bit-score
-		# next if($sp ne 'Bgla');
+		#next if($sp ne 'Bhyb');
 		my (%stats,%sp_stats,%queries,%bit,%ancestral_bit,@alleles);
 		if(open(BLAST,"<",$blastdirs{$sp}.$file)){
 			while(my $line = <BLAST>){
@@ -280,16 +282,18 @@ FILE: foreach my $file (@infiles) {
 			#	scalar(keys(%stats)),
 			#	join(',',keys(%stats)));
 			#next FILE;
-				
+			
 			# count alleles and stop if too many
 			if($max_reference_seqs{$sp}[3] > 0 && #only if defined as in Bmex
 				scalar(keys(%stats)) > $max_reference_seqs{$sp}[3]){
+
+				# count alleles and stop if too many
 				foreach $sseqid (keys(%stats)){
 				print "$sseqid $stats{$sseqid}{'tot'} $stats{$sseqid}{'bit'}\n";
 				}
 				print "# WARNING; skip cluster due to too many $sp alleles\n";
                                 next FILE;
-			}
+			} 
 		}
 
    		# choose best hit(s)
@@ -347,8 +351,8 @@ FILE: foreach my $file (@infiles) {
 					# add dummy allele if less than max copies found,
 					# considering bit score to ancestral and recent
 					# sequences
-					if($hits < $max_reference_seqs{$sp}[0]){ 
-						
+					while($hits < $max_reference_seqs{$sp}[0]){ 
+							
 						if($bit{$sseqid}{'ancestral'} >=
 							$bit{$sseqid}{'recent'} ) {
 							push(@{$genes{$sp}{'name'}}, 
@@ -361,6 +365,7 @@ FILE: foreach my $file (@infiles) {
 							unshift(@{$genes{$sp}{'sequence'}}, 
 								'-' x 100);
 						}
+						$hits++;
 					}
 
 					last;
